@@ -1,4 +1,4 @@
-const API_URL = "https://n8n-bqrh.srv1648756.hstgr.cloud/webhook/tellecaller-leads";
+const API_URL = process.env.N8N_FETCH_LEADS_URL;
 
 export async function GET(request) {
   try {

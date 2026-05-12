@@ -1,4 +1,4 @@
-const API_URL = "https://n8n-bqrh.srv1648756.hstgr.cloud/webhook/telecaller-update";
+const API_URL = process.env.N8N_UPDATE_LEAD_URL;
 
 export async function POST(request) {
   try {

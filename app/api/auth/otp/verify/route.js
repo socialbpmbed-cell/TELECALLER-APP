@@ -1,4 +1,4 @@
-const API_URL = "https://n8n-bqrh.srv1648756.hstgr.cloud/webhook/verify-otp";
+const API_URL = process.env.N8N_VERIFY_OTP_URL;
 
 export async function POST(request) {
   try {
