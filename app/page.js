@@ -42,6 +42,7 @@ function LeadCard({lead,onSubmit,telecallerName}){
   const[st,setSt]=useState(null);
   const[notes,setNotes]=useState("");
   const[cb,setCb]=useState("");
+  const[selectedCourse,setSelectedCourse]=useState(lead.course||"");
   const[exp,setExp]=useState(false);
   const[done,setDone]=useState(false);
   const[busy,setBusy]=useState(false);
@@ -52,8 +53,19 @@ function LeadCard({lead,onSubmit,telecallerName}){
   const submit=async()=>{
     if(!canSub)return;
     setBusy(true);
-    await onSubmit({slNo:lead.slNo,name:lead.name,phone:lead.phone,pickedUp:pu,status:st,notes,callbackDate:cb||null,telecaller:telecallerName});
-    setDone(true);setBusy(false);
+    await onSubmit({
+      slNo: lead.slNo,
+      name: lead.name,
+      phone: lead.phone,
+      pickedUp: pu,
+      status: st,
+      notes,
+      callbackDate: cb || null,
+      telecaller: telecallerName,
+      course: selectedCourse,
+    });
+    setDone(true);
+    setBusy(false);
   };
 
   if(done)return<div style={{background:C.gbg,borderRadius:12,padding:"20px",border:`1px solid ${C.gbdr}`,textAlign:"center",marginBottom:12}}><Ic.Check s={28} c={C.green}/><div style={{fontSize:14,fontWeight:700,color:C.green,fontFamily:C.font,marginTop:4}}>{lead.name} - Submitted</div><div style={{fontSize:12,color:C.sec,marginTop:2}}>{st}{cb?` | Callback: ${cb}`:""}</div></div>;
@@ -87,14 +99,24 @@ function LeadCard({lead,onSubmit,telecallerName}){
         </div>
       </div>
 
-      <div style={{marginBottom:14}}>
-        <div style={{fontSize:11,fontWeight:700,color:C.text,letterSpacing:0.5,marginBottom:6}}>STATUS AFTER CALL</div>
-        <div style={{display:"flex",gap:6}}>
-          <Btn selected={st==="Open"} onClick={()=>setSt("Open")} color={C.accent} bg={C.abg} bdr={C.abdr}>Open</Btn>
-          <Btn selected={st==="Closed"} onClick={()=>setSt("Closed")} color={C.green} bg={C.gbg} bdr={C.gbdr}>Closed</Btn>
-          <Btn selected={st==="Dead"} onClick={()=>setSt("Dead")} color={C.red} bg={C.rbg} bdr={C.rbdr}>Dead</Btn>
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.text, letterSpacing: 0.5, marginBottom: 6 }}>STATUS AFTER CALL</div>
+        <div style={{ display: "flex", gap: 6 }}>
+          <Btn selected={st === "Open"} onClick={() => setSt("Open")} color={C.accent} bg={C.abg} bdr={C.abdr}>Open</Btn>
+          <Btn selected={st === "Closed"} onClick={() => setSt("Closed")} color={C.green} bg={C.gbg} bdr={C.gbdr}>Closed</Btn>
+          <Btn selected={st === "Dead"} onClick={() => setSt("Dead")} color={C.red} bg={C.rbg} bdr={C.rbdr}>Dead</Btn>
         </div>
       </div>
+
+      {!lead.course && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.text, letterSpacing: 0.5, marginBottom: 6 }}>SELECT COURSE</div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <Btn selected={selectedCourse === "BSC"} onClick={() => setSelectedCourse("BSC")} color={C.blue} bg={C.bbg} bdr="#BFDBFE">BSC</Btn>
+            <Btn selected={selectedCourse === "GNM"} onClick={() => setSelectedCourse("GNM")} color={C.blue} bg={C.bbg} bdr="#BFDBFE">GNM</Btn>
+          </div>
+        </div>
+      )}
 
       <div style={{marginBottom:14}}>
         <div style={{fontSize:11,fontWeight:700,color:C.text,letterSpacing:0.5,marginBottom:6}}>CALL NOTES</div>
