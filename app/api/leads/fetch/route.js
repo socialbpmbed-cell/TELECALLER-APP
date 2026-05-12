@@ -14,6 +14,7 @@ export async function GET(request) {
     console.log("n8n response status:", res.status);
     
     const data = await res.json();
+    console.log("n8n response data:", JSON.stringify(data));
     return Response.json(data);
   } catch (error) {
     console.error("Fetch error:", error);
