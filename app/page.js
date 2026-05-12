@@ -128,65 +128,133 @@ export default function App(){
   const refs=[useRef(),useRef(),useRef(),useRef(),useRef(),useRef()];
   const[leads,setLeads]=useState([]);
   const[loading,setLoading]=useState(false);
-  const[submitted,setSubmitted]=useState(0);
-  const[err,setErr]=useState("");
+  const [completedIds, setCompletedIds] = useState(new Set());
+  const [err, setErr] = useState("");
 
-  useEffect(()=>{if(timer<=0)return;const t=setTimeout(()=>setTimer(r=>r-1),1000);return()=>clearTimeout(t)},[timer]);
+  useEffect(() => {
+    if (timer <= 0) return;
+    const t = setTimeout(() => setTimer((r) => r - 1), 1000);
+    return () => clearTimeout(t);
+  }, [timer]);
 
-  const sendOtp=async()=>{
-    if(!name.trim()||!email.trim())return;
-    const em=email.trim().toLowerCase();
-    if(!ALLOWED_EMAILS.includes(em)){setOtpErr("This email is not authorized. Contact admin.");return}
-    setAuthBusy(true);setOtpErr("");
-    try{
-      const res=await fetch(API.SEND_OTP,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:em,name:name.trim()})});
-      const data=await res.json();
-      if(data.sent){setStep("otp");setTimer(60);setTimeout(()=>refs[0].current?.focus(),100)}
-      else setOtpErr(data.error||"Could not send OTP.");
-    }catch{setOtpErr("Network error. Check connection.")}
-    finally{setAuthBusy(false)}
+  const sendOtp = async () => {
+    if (!name.trim() || !email.trim()) return;
+    const em = email.trim().toLowerCase();
+    if (!ALLOWED_EMAILS.includes(em)) {
+      setOtpErr("This email is not authorized. Contact admin.");
+      return;
+    }
+    setAuthBusy(true);
+    setOtpErr("");
+    try {
+      const res = await fetch(API.SEND_OTP, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: em, name: name.trim() }),
+      });
+      const data = await res.json();
+      if (data.sent) {
+        setStep("otp");
+        setTimer(60);
+        setTimeout(() => refs[0].current?.focus(), 100);
+      } else setOtpErr(data.error || "Could not send OTP.");
+    } catch {
+      setOtpErr("Network error. Check connection.");
+    } finally {
+      setAuthBusy(false);
+    }
   };
 
-  const otpChange=(i,v)=>{if(!/^\d*$/.test(v))return;const nw=[...otp];nw[i]=v.slice(-1);setOtp(nw);setOtpErr("");if(v&&i<5)refs[i+1].current?.focus();if(v&&i===5){const full=[...nw.slice(0,5),v.slice(-1)].join("");if(full.length===6)setTimeout(()=>verifyOtp(full),200)}};
-  const otpKey=(i,e)=>{if(e.key==="Backspace"&&!otp[i]&&i>0)refs[i-1].current?.focus();if(e.key==="Enter"){const f=otp.join("");if(f.length===6)verifyOtp(f)}};
-
-  const verifyOtp=async(code)=>{
-    setAuthBusy(true);setOtpErr("");
-    try{
-      const res=await fetch(API.VERIFY_OTP,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email.trim().toLowerCase(),otp:code,name:name.trim()})});
-      const data=await res.json();
-      if(data.verified){setStep("app");setTimeout(fetchLeads,100)}
-      else{setOtpErr(data.error||"Invalid OTP.");setOtp(["","","","","",""]);refs[0].current?.focus()}
-    }catch{setOtpErr("Verification failed.")}
-    finally{setAuthBusy(false)}
+  const otpChange = (i, v) => {
+    if (!/^\d*$/.test(v)) return;
+    const nw = [...otp];
+    nw[i] = v.slice(-1);
+    setOtp(nw);
+    setOtpErr("");
+    if (v && i < 5) refs[i + 1].current?.focus();
+    if (v && i === 5) {
+      const full = [...nw.slice(0, 5), v.slice(-1)].join("");
+      if (full.length === 6) setTimeout(() => verifyOtp(full), 200);
+    }
+  };
+  const otpKey = (i, e) => {
+    if (e.key === "Backspace" && !otp[i] && i > 0) refs[i - 1].current?.focus();
+    if (e.key === "Enter") {
+      const f = otp.join("");
+      if (f.length === 6) verifyOtp(f);
+    }
   };
 
-  const fetchLeads=async()=>{
-    setLoading(true);setErr("");
-    try{
-      const res=await fetch(`${API.FETCH_LEADS}?name=${encodeURIComponent(name.trim())}`);
-      const data=await res.json();
-      setLeads(data.leads||[]);
-    }catch{setErr("Could not fetch leads. Check if n8n is running.")}
-    finally{setLoading(false)}
+  const verifyOtp = async (code) => {
+    setAuthBusy(true);
+    setOtpErr("");
+    try {
+      const res = await fetch(API.VERIFY_OTP, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          otp: code,
+          name: name.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.verified) {
+        setStep("app");
+        setTimeout(fetchLeads, 100);
+      } else {
+        setOtpErr(data.error || "Invalid OTP.");
+        setOtp(["", "", "", "", "", ""]);
+        refs[0].current?.focus();
+      }
+    } catch {
+      setOtpErr("Verification failed.");
+    } finally {
+      setAuthBusy(false);
+    }
   };
 
-  const handleSubmit=async(update)=>{
-    try{await fetch(API.SUBMIT_UPDATE,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(update)})}catch{}
-    setSubmitted(prev=>prev+1);
+  const fetchLeads = async () => {
+    setLoading(true);
+    setErr("");
+    try {
+      const res = await fetch(
+        `${API.FETCH_LEADS}?name=${encodeURIComponent(name.trim())}`
+      );
+      const data = await res.json();
+      setLeads(data.leads || []);
+      setCompletedIds(new Set()); // Reset completed on refresh
+    } catch {
+      setErr("Could not fetch leads. Check if n8n is running.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const logout=()=>{
+  const handleSubmit = async (update) => {
+    try {
+      await fetch(API.SUBMIT_UPDATE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(update),
+      });
+      setCompletedIds((prev) => new Set(prev).add(update.slNo));
+    } catch (e) {
+      console.error("Submit error:", e);
+    }
+  };
+
+  const logout = () => {
     setStep("login");
     setName("");
     setEmail("");
-    setOtp(["","","","","",""]);
+    setOtp(["", "", "", "", "", ""]);
     setLeads([]);
-    setSubmitted(0);
+    setCompletedIds(new Set());
     setErr("");
   };
 
-  const pending=leads.length-submitted;
+  const pending = leads.length - completedIds.size;
   const today=new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"short",year:"numeric"});
 
   if(step==="login")return<div style={{minHeight:"100vh",background:C.bg,fontFamily:C.font,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 20px"}}>
@@ -235,14 +303,14 @@ export default function App(){
           <div style={{textAlign:"right"}}><div style={{fontSize:22,fontWeight:800,color:pending>0?C.accent:C.green}}>{pending}</div><div style={{fontSize:9,fontWeight:700,color:C.dim,letterSpacing:1}}>PENDING</div></div>
         </div>
       </div>
-      <div style={{marginTop:8,background:C.bg,borderRadius:4,height:4,overflow:"hidden"}}><div style={{width:`${leads.length>0?(submitted/leads.length)*100:0}%`,height:"100%",background:C.green,borderRadius:4,transition:"width 0.3s ease"}}/></div>
+      <div style={{marginTop:8,background:C.bg,borderRadius:4,height:4,overflow:"hidden"}}><div style={{width:`${leads.length>0?(completedIds.size/leads.length)*100:0}%`,height:"100%",background:C.green,borderRadius:4,transition:"width 0.3s ease"}}/></div>
     </div>
 
     <div style={{padding:"14px 12px"}}>
       {loading&&<div style={{textAlign:"center",padding:"40px 0",color:C.sec}}>Loading today's leads...</div>}
       {err&&<div style={{padding:"12px 16px",borderRadius:8,marginBottom:12,background:C.rbg,border:`1px solid ${C.rbdr}`,color:C.red,fontSize:13,textAlign:"center"}}>{err}</div>}
       {!loading&&leads.length===0&&!err&&<div style={{textAlign:"center",padding:"60px 20px"}}><Ic.Check s={40} c={C.green}/><div style={{fontSize:16,fontWeight:700,color:C.text,marginTop:8}}>No leads for today</div><div style={{fontSize:13,color:C.sec,marginTop:4}}>All caught up. Check back tomorrow.</div></div>}
-      {!loading&&submitted===leads.length&&leads.length>0&&<div style={{textAlign:"center",padding:"40px 20px",marginBottom:12,background:C.gbg,borderRadius:12,border:`1px solid ${C.gbdr}`}}><Ic.Check s={40} c={C.green}/><div style={{fontSize:18,fontWeight:800,color:C.green,marginTop:8}}>All Done!</div><div style={{fontSize:13,color:C.sec,marginTop:4}}>{leads.length} leads completed. Great work, {name}.</div></div>}
+      {!loading&&completedIds.size===leads.length&&leads.length>0&&<div style={{textAlign:"center",padding:"40px 20px",marginBottom:12,background:C.gbg,borderRadius:12,border:`1px solid ${C.gbdr}`}}><Ic.Check s={40} c={C.green}/><div style={{fontSize:18,fontWeight:800,color:C.green,marginTop:8}}>All Done!</div><div style={{fontSize:13,color:C.sec,marginTop:4}}>{leads.length} leads completed. Great work, {name}.</div></div>}
       {leads.map(l=><LeadCard key={l.slNo} lead={l} onSubmit={handleSubmit} telecallerName={name.trim()}/>)}
     </div>
 
