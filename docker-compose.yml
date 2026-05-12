@@ -6,7 +6,7 @@ services:
       - "3000:3000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.telecaller.rule=Host(`telecaller.srv1648756.hstgr.cloud`)"
+      - "traefik.http.routers.telecaller.rule=Host(`telecallerapp.duckdns.org`)"
       - "traefik.http.routers.telecaller.entrypoints=websecure"
       - "traefik.http.routers.telecaller.tls.certresolver=letsencrypt"
       - "traefik.http.services.telecaller.loadbalancer.server.port=3000"
