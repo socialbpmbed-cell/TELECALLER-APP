@@ -4,12 +4,19 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const name = searchParams.get("name");
+    
+    console.log("Fetching leads for:", name, "from", API_URL);
+    
     const res = await fetch(`${API_URL}?name=${encodeURIComponent(name)}`, {
       cache: "no-store",
     });
+    
+    console.log("n8n response status:", res.status);
+    
     const data = await res.json();
     return Response.json(data);
   } catch (error) {
-    return Response.json({ error: "Failed to fetch leads" }, { status: 500 });
+    console.error("Fetch error:", error);
+    return Response.json({ error: "Failed to fetch leads", details: error.message }, { status: 500 });
   }
 }
