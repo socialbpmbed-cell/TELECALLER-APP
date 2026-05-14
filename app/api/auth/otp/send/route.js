@@ -1,44 +1,65 @@
+import { checkRateLimit } from '@/lib/rateLimit';
+
 const API_URL = process.env.N8N_SEND_OTP_URL;
 
+const ALLOWED_EMAILS = [
+  "telecaller1@pndas.com",
+  "telecaller2@pndas.com",
+  "telecaller3@pndas.com",
+  "pndasacademyofnursing@gmail.com",
+  "ritamghosh195@gmail.com",
+];
+
 export async function POST(request) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+
+  if (!checkRateLimit(`otp-send:${ip}`, 5, 15 * 60 * 1000)) {
+    return Response.json({ error: 'Too many requests. Try again in 15 minutes.' }, { status: 429 });
+  }
+
   try {
     const body = await request.json();
-    
-    // Create an AbortController for a 10-second timeout
+    const email = body.email?.trim().toLowerCase();
+
+    if (!email || !ALLOWED_EMAILS.includes(email)) {
+      return Response.json({ error: 'This email is not authorized. Contact admin.' }, { status: 403 });
+    }
+
+    if (!API_URL) {
+      return Response.json({ error: 'OTP service not configured.' }, { status: 503 });
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-      signal: controller.signal
+      signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
 
     const text = await res.text();
     let data;
     try {
       data = JSON.parse(text);
-      // If n8n succeeded but didn't return "sent: true" (e.g. it returned Google Sheets output)
-      // we inject it so the frontend proceeds.
       if (res.status === 200 && data && !data.error) {
         data.sent = true;
       }
-    } catch (e) {
-      if (text.includes("Workflow started") || res.status === 200) {
-        return Response.json({ sent: true, note: "Handled by proxy" });
+    } catch {
+      if (text.includes('Workflow started') || res.status === 200) {
+        return Response.json({ sent: true });
       }
-      return Response.json({ error: "Invalid response from n8n", details: text }, { status: 500 });
+      return Response.json({ error: 'Invalid response from OTP service.' }, { status: 500 });
     }
 
     return Response.json(data, { status: res.status });
   } catch (error) {
-    console.error("OTP Proxy Error:", error);
     if (error.name === 'AbortError') {
-      return Response.json({ error: "n8n request timed out. Check if workflow is active." }, { status: 504 });
+      return Response.json({ error: 'OTP service timed out.' }, { status: 504 });
     }
-    return Response.json({ error: "Failed to connect to n8n backend" }, { status: 500 });
+    return Response.json({ error: 'Failed to send OTP.' }, { status: 500 });
   }
 }

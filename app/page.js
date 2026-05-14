@@ -7,15 +7,8 @@ const API = {
   VERIFY_OTP: "/api/auth/otp/verify",
   FETCH_LEADS: "/api/leads/fetch",
   SUBMIT_UPDATE: "/api/leads/update",
+  LOGOUT: "/api/auth/logout",
 };
-
-const ALLOWED_EMAILS = [
-  "telecaller1@pndas.com",
-  "telecaller2@pndas.com",
-  "telecaller3@pndas.com",
-  "pndasacademyofnursing@gmail.com",
-  "ritamghosh195@gmail.com",
-];
 
 const C = {bg:"#F4F1EC",card:"#FFFFFF",border:"#DDD8CE",text:"#1A1714",sec:"#6B6560",dim:"#9C9690",accent:"#C8702A",abg:"#FFF4EB",abdr:"#F0D4B8",green:"#2D8A4E",gbg:"#E8F5EB",gbdr:"#B8DCC4",red:"#C0392B",rbg:"#FDECEB",rbdr:"#F0C4BF",amber:"#B8860B",ambg:"#FFF8E7",ambdr:"#E8D5A0",blue:"#2563EB",bbg:"#EFF6FF",font:"'DM Sans',sans-serif",mono:"'IBM Plex Mono',monospace"};
 
@@ -172,10 +165,6 @@ export default function App(){
   const sendOtp = async () => {
     if (!name.trim() || !email.trim()) return;
     const em = email.trim().toLowerCase();
-    if (!ALLOWED_EMAILS.includes(em)) {
-      setOtpErr("This email is not authorized. Contact admin.");
-      return;
-    }
     setAuthBusy(true);
     setOtpErr("");
     try {
@@ -276,7 +265,8 @@ export default function App(){
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await fetch(API.LOGOUT, { method: "POST" }).catch(() => {});
     setStep("login");
     setName("");
     setEmail("");

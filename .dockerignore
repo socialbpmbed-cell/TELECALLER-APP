@@ -5,4 +5,5 @@ node_modules
 README.md
 Dockerfile
 docker-compose.yml
-.env.local
+.env
+.env.*
