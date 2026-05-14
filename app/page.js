@@ -13,8 +13,7 @@ const ALLOWED_EMAILS = [
   "telecaller1@pndas.com",
   "telecaller2@pndas.com",
   "telecaller3@pndas.com",
-  "telecaller4@pndas.com",
-  "ritam@rigzz.com",
+  "pndasacademyofnursing@gmail.com",
   "ritamghosh195@gmail.com",
 ];
 
