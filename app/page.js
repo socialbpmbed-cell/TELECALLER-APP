@@ -47,6 +47,7 @@ function LeadCard({lead,onSubmit,telecallerName}){
   const[done,setDone]=useState(false);
   const[busy,setBusy]=useState(false);
   const isCb=lead.pushReason?.includes("Callback");
+  const noCourse=!lead.course;
   const canSub=pu&&st&&!busy;
   const phones=(lead.phone||"").split("/").map(p=>p.trim()).filter(Boolean);
 
@@ -73,9 +74,17 @@ function LeadCard({lead,onSubmit,telecallerName}){
   return<div style={{background:C.card,borderRadius:12,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:"0 1px 3px rgba(0,0,0,0.04)",overflow:"hidden"}}>
     <button onClick={()=>setExp(!exp)} style={{width:"100%",padding:"14px 16px",background:isCb?C.abg:C.card,border:"none",borderBottom:exp?`1px solid ${C.border}`:"none",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12,WebkitTapHighlightColor:"transparent"}}>
       <div style={{width:36,height:36,borderRadius:"50%",background:isCb?C.abg:C.bbg,border:`1px solid ${isCb?C.abdr:"#BFDBFE"}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ic.User s={16} c={isCb?C.accent:C.blue}/></div>
-      <div style={{flex:1,minWidth:0}}><div style={{fontSize:15,fontWeight:700,color:C.text,fontFamily:C.font}}>{lead.name}</div><div style={{fontSize:11,color:C.sec,fontFamily:C.mono,marginTop:1}}>#{lead.slNo} &middot; {lead.course} &middot; {lead.area}</div></div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:15,fontWeight:700,color:C.text,fontFamily:C.font}}>{lead.name}</div>
+        <div style={{fontSize:11,color:C.sec,fontFamily:C.mono,marginTop:1}}>
+          #{lead.slNo} &middot; <span style={{color:noCourse?C.red:C.sec,fontWeight:noCourse?700:400}}>{lead.course||"NO COURSE"}</span> &middot; {lead.area}
+        </div>
+      </div>
       <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0}}>
-        <span style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:10,background:isCb?C.abg:C.ambg,color:isCb?C.accent:C.amber,border:`1px solid ${isCb?C.abdr:C.ambdr}`,letterSpacing:0.5}}>{isCb?"CALLBACK":"STALE"}</span>
+        <div style={{display:"flex",gap:4}}>
+          {noCourse && <span style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:10,background:C.ambg,color:C.amber,border:`1px solid ${C.ambdr}`,letterSpacing:0.5}}>NO COURSE</span>}
+          <span style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:10,background:isCb?C.abg:C.ambg,color:isCb?C.accent:C.amber,border:`1px solid ${isCb?C.abdr:C.ambdr}`,letterSpacing:0.5}}>{isCb?"CALLBACK":"STALE"}</span>
+        </div>
         <div style={{transform:`rotate(${exp?90:0}deg)`,transition:"transform 0.2s",color:C.dim}}><Ic.Arrow s={14}/></div>
       </div>
     </button>
@@ -108,12 +117,16 @@ function LeadCard({lead,onSubmit,telecallerName}){
         </div>
       </div>
 
-      {!lead.course && (
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.text, letterSpacing: 0.5, marginBottom: 6 }}>SELECT COURSE</div>
-          <div style={{ display: "flex", gap: 6 }}>
-            <Btn selected={selectedCourse === "BSC"} onClick={() => setSelectedCourse("BSC")} color={C.blue} bg={C.bbg} bdr="#BFDBFE">BSC</Btn>
-            <Btn selected={selectedCourse === "GNM"} onClick={() => setSelectedCourse("GNM")} color={C.blue} bg={C.bbg} bdr="#BFDBFE">GNM</Btn>
+      {noCourse && (
+        <div style={{ marginBottom: 14, padding: "12px", background: C.bbg, borderRadius: 10, border: `1px solid #BFDBFE` }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.blue, letterSpacing: 0.5, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+            <Ic.Shield s={14} c={C.blue}/> SELECT COURSE <span style={{fontWeight:400,color:C.dim}}>(if known)</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+            <Btn selected={selectedCourse === "BSC"} onClick={() => setSelectedCourse("BSC")} color={C.blue} bg="#fff" bdr={C.blue}>BSC Nursing</Btn>
+            <Btn selected={selectedCourse === "GNM"} onClick={() => setSelectedCourse("GNM")} color={C.blue} bg="#fff" bdr={C.blue}>GNM</Btn>
+            <Btn selected={selectedCourse === "ANM"} onClick={() => setSelectedCourse("ANM")} color={C.blue} bg="#fff" bdr={C.blue}>ANM</Btn>
+            <Btn selected={selectedCourse === "P.B.Sc"} onClick={() => setSelectedCourse("P.B.Sc")} color={C.blue} bg="#fff" bdr={C.blue}>Post Basic</Btn>
           </div>
         </div>
       )}
