@@ -121,11 +121,9 @@ function LeadCard({lead,onSubmit,telecallerName}){
           <div style={{ fontSize: 11, fontWeight: 800, color: C.blue, letterSpacing: 0.5, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
             <Ic.Shield s={14} c={C.blue}/> SELECT COURSE <span style={{fontWeight:400,color:C.dim}}>(if known)</span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-            <Btn selected={selectedCourse === "BSC"} onClick={() => setSelectedCourse("BSC")} color={C.blue} bg="#fff" bdr={C.blue}>BSC Nursing</Btn>
+          <div style={{ display: "flex", gap: 6 }}>
+            <Btn selected={selectedCourse === "B.Sc Nursing"} onClick={() => setSelectedCourse("B.Sc Nursing")} color={C.blue} bg="#fff" bdr={C.blue}>B.Sc Nursing</Btn>
             <Btn selected={selectedCourse === "GNM"} onClick={() => setSelectedCourse("GNM")} color={C.blue} bg="#fff" bdr={C.blue}>GNM</Btn>
-            <Btn selected={selectedCourse === "ANM"} onClick={() => setSelectedCourse("ANM")} color={C.blue} bg="#fff" bdr={C.blue}>ANM</Btn>
-            <Btn selected={selectedCourse === "P.B.Sc"} onClick={() => setSelectedCourse("P.B.Sc")} color={C.blue} bg="#fff" bdr={C.blue}>Post Basic</Btn>
           </div>
         </div>
       )}
