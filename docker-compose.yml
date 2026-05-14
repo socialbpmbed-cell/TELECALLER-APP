@@ -3,8 +3,6 @@ services:
     build: .
     env_file: .env
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.telecaller.rule=Host(`telecallerapp.duckdns.org`)"
